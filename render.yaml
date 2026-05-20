@@ -1,0 +1,40 @@
+services:
+  - type: web
+    name: library-api
+    runtime: node
+    rootDir: api
+    buildCommand: npm install && npx prisma generate && npm run build
+    startCommand: npm run start:prod
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: ACCESS_TOKEN_KEY
+        sync: false
+      - key: ACCESS_TOKEN_TIME
+        value: 25m
+      - key: API_URL
+        sync: false
+      - key: PORT
+        value: 3000
+      - key: SUPER_ADMIN_PHONE
+        sync: false
+      - key: SUPER_ADMIN_SECRET
+        sync: false
+      - key: REAL_ADMIN_PHONE
+        sync: false
+      - key: REAL_ADMIN_SECRET
+        sync: false
+      - key: SMS_TOKEN
+        sync: false
+      - key: SMS_PSROL
+        sync: false
+      - key: SMS_SENDER
+        sync: false
+      - key: SMS_SERVICE_URL
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false

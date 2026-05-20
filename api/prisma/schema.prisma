@@ -1,0 +1,387 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/**
+ * ===================== ENUMS =====================
+ */
+
+ enum ImageOwnerType {
+  BOOK
+  USER
+  AUTHOR
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum bookState {
+  AVAILABLE
+  BOOKED
+  BORROWED
+  RETURNED
+  NOTAVAILABLE
+}
+
+enum Subscription {
+  ELITE
+  PRO
+  PREMIUM
+}
+
+enum MemberStatus {
+  ACTIVE
+  NOTACTIVE
+}
+
+// enum bookStatus {
+//   TAKEN
+//   BOOKED
+//   RETURNED
+// }
+
+enum BookStatus {
+  BORROWED
+  RETURNED
+  OVERDUE
+  LOST
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  ONLINE
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum ReturnRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum NotificationType {
+  BORROW_REMINDER    // qaytarish muddati yaqin
+  BOOKING_EXPIRED    // bron muddati tugadi
+  WAITLIST_READY     // navbatdagi kitob bo'sh bo'ldi
+  RETURN_ACCEPTED    // qaytarish tasdiqlandi
+  RETURN_REJECTED    // qaytarish rad etildi
+  MEMBERSHIP_EXPIRY  // obuna tugash arafasi
+  GENERAL
+}
+
+enum WaitlistStatus {
+  WAITING
+  NOTIFIED
+  CANCELLED
+}
+
+/**
+ * ===================== MODELS =====================
+ */
+
+// model Phone {
+//   id        Int      @id @default(autoincrement())
+//   phone     String   @unique
+//   otp       Int
+//   createdAt DateTime @default(now())
+
+//   user User?
+// }
+
+model User {
+  id        Int       @id @default(autoincrement())
+  firstName String
+  lastName  String
+  phone     String    @unique
+  password  String
+  role      UserRole? @default(USER)
+
+  isActive  Boolean  @default(false)
+  isDemo    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  score     Int      @default(0)
+
+  members       Member[]
+  payments      Payment[]
+  bookHistory   BookHistory[]
+  savedBook     SavedBook[]
+  reviews       Review[]
+  notifications Notification[]
+  waitlists     Waitlist[]
+}
+
+/**
+ * ---------- Library ----------
+ */
+
+model Library {
+  id       Int     @id @default(autoincrement())
+  name     String
+  contact  String?
+  address  String?
+  location String?
+  lat      Float?
+  lon      Float?
+
+  books Book[]
+  // memberState MemberState[]
+}
+
+/**
+ * ---------- Books ----------
+ */
+
+model Category {
+  id   Int     @id @default(autoincrement())
+  name String  @unique
+  desc String?
+
+  books Book[]
+}
+
+model Author {
+  id   Int     @id @default(autoincrement())
+  name String
+  desc String?
+
+  books Book[]
+}
+
+model Book {
+  id          Int       @id @default(autoincrement())
+  libraryId   Int
+  categoryId  Int
+  authorId    Int
+  title       String?
+  status      bookState
+  description String?
+  quantity    Int   @default(0)
+  pages       Int       @default(0)
+
+  library  Library  @relation(fields: [libraryId], references: [id])
+  category Category @relation(fields: [categoryId], references: [id])
+  author   Author   @relation(fields: [authorId], references: [id])
+
+  history       BookHistory[]
+  memberStats   MemberState[]
+  returnRequest ReturnRequest[]
+  savedBook     SavedBook[]
+  reviews       Review[]
+  waitlists     Waitlist[]
+}
+
+model BookHistory {
+  id         Int        @id @default(autoincrement())
+  userId     Int
+  bookId     Int
+  borrowedAt DateTime
+  returnedAt DateTime?
+  status     BookStatus
+
+  user User @relation(fields: [userId], references: [id])
+  book Book @relation(fields: [bookId], references: [id])
+}
+
+/**
+ * ---------- Membership ----------
+ */
+
+model Membership {
+  id           Int          @id @default(autoincrement())
+  name         String
+  price        Decimal
+  durationDays Int
+  description  String?
+  limitBook    Int
+  limitBorrow  Int
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  members  Member[]
+  // permissions MembershipPermission[]
+  payments Payment[]
+}
+
+// model MembershipPermission {
+//   id           Int @id @default(autoincrement())
+//   membershipId Int
+//   action       PermissionAction
+//   limit        Int
+
+//   membership Membership @relation(fields: [membershipId], references: [id])
+// }
+
+model Member {
+  id           Int          @id @default(autoincrement())
+  userId       Int
+  membershipId Int
+  startDate    DateTime
+  endDate      DateTime
+  status       MemberStatus
+  isPaid       Boolean      @default(false)
+
+  user          User            @relation(fields: [userId], references: [id])
+  membership    Membership      @relation(fields: [membershipId], references: [id])
+  memberState   MemberState[]
+  returnRequest ReturnRequest[]
+
+  // @@index([userId])
+  // @@index([membershipId])
+}
+
+/**
+ * ---------- Member State (limits) ----------
+ */
+
+model MemberState {
+  id        Int       @id @default(autoincrement())
+  // userId        Int
+  memberId  Int
+  // libraryId Int
+  bookId    Int
+  startDate DateTime
+  endDate   DateTime
+  status    bookState
+
+  updatedAt DateTime @updatedAt
+
+  // user        User       @relation(fields: [userId], references: [id])
+  member Member @relation(fields: [memberId], references: [id])
+  // library Library @relation(fields: [libraryId], references: [id])
+  book   Book   @relation(fields: [bookId], references: [id])
+
+  // @@unique([ memberId, libraryId])
+  @@unique([memberId, bookId])
+}
+
+/**
+ * ---------- Payment ----------
+ */
+
+model Payment {
+  id           Int           @id @default(autoincrement())
+  userId       Int
+  membershipId Int
+  method       PaymentMethod
+  amount       Decimal
+  status       PaymentStatus
+  paidAt       DateTime?
+  createdAt    DateTime      @default(now())
+
+  user       User       @relation(fields: [userId], references: [id])
+  membership Membership @relation(fields: [membershipId], references: [id])
+}
+
+model ReturnRequest {
+  id        Int                 @id @default(autoincrement())
+  memberId  Int
+  bookId    Int
+  status    ReturnRequestStatus @default(PENDING)
+  note      String?
+  createdAt DateTime            @default(now())
+  decidedAt DateTime?
+
+  // связи (не обязательно, но удобно)
+  member Member @relation(fields: [memberId], references: [id])
+  book   Book   @relation(fields: [bookId], references: [id])
+}
+
+model SavedBook {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  bookId    Int
+  createdAt DateTime @default(now())
+
+  user       User       @relation(fields: [userId], references: [id])
+  book       Book       @relation(fields: [bookId], references: [id])
+  @@unique([userId,bookId])
+}
+
+model Image {
+  id        Int             @id @default(autoincrement())
+  filename  String
+  url       String
+
+  ownerId   Int
+  ownerType ImageOwnerType
+
+  createdAt DateTime        @default(now())
+}
+
+model PasswordReset {
+  id        Int      @id @default(autoincrement())
+  phone     String   @unique
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+/**
+ * ---------- Rating & Review ----------
+ */
+model Review {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  bookId    Int
+  rating    Int      // 1-5
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, bookId])
+}
+
+/**
+ * ---------- Notification ----------
+ */
+model Notification {
+  id        Int              @id @default(autoincrement())
+  userId    Int
+  type      NotificationType
+  title     String
+  message   String
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/**
+ * ---------- Waitlist ----------
+ */
+model Waitlist {
+  id        Int           @id @default(autoincrement())
+  userId    Int
+  bookId    Int
+  status    WaitlistStatus @default(WAITING)
+  createdAt DateTime      @default(now())
+  notifiedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, bookId])
+}
