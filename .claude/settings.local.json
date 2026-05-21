@@ -80,7 +80,12 @@
       "Bash(where gh *)",
       "Bash(where git *)",
       "Bash(git --version)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git config *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git remote *)",
+      "Bash(git branch *)",
+      "Bash(git push *)"
     ]
   }
 }

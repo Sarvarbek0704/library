@@ -1,6 +1,6 @@
 ﻿import axios from "axios";
 
-export const API_BASE = "http://localhost:3000"; // o'zingniki bo'lsa almashtir
+export const API_BASE = "https://library-api-3cn1.onrender.com"; // o'zingniki bo'lsa almashtir
 
 export const http = axios.create({
   baseURL: API_BASE,

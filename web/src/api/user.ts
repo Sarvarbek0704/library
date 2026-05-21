@@ -32,7 +32,7 @@ export interface ApiUser {
 }
 
 const api = axios.create({
-  baseURL: "http://localhost:3000/api",
+  baseURL: "https://library-api-3cn1.onrender.com/api",
 });
 
 api.interceptors.request.use((config) => {
@@ -50,7 +50,7 @@ export function getLoginPhone(): string {
   );
 }
 
-const API_BASE = "http://localhost:3000";
+const API_BASE = "https://library-api-3cn1.onrender.com";
 
 export function resolveImageUrl(url?: string): string {
   if (!url) return "";

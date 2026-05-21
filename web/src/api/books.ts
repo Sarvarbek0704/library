@@ -1,6 +1,6 @@
 ﻿import { api } from "./api";
 
-const API_BASE = "http://localhost:3000";
+const API_BASE = "https://library-api-3cn1.onrender.com";
 
 function resolveImageUrl(v?: string): string {
   const s = String(v || "").trim();

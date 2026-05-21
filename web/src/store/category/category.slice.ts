@@ -22,10 +22,10 @@ export const fetchCategories = createAsyncThunk(
   "category/fetchCategories",
   async () => {
     const res = await axios.get(
-      "http://localhost:3000/api/category"
+      "https://library-api-3cn1.onrender.com/api/category",
     );
     return res.data;
-  }
+  },
 );
 
 const categorySlice = createSlice({

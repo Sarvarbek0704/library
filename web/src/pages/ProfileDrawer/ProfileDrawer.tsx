@@ -35,7 +35,7 @@ type Props = {
   onUserUpdated?: (user: AnyUser) => void;
 };
 
-const API_BASE = "http://localhost:3000";
+const API_BASE = "https://library-api-3cn1.onrender.com";
 
 function getLoginPhone(): string {
   return (
