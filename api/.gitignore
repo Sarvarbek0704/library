@@ -4,6 +4,21 @@
 /build
 /uploads
 
+# TypeScript compiled files (root level)
+*.js
+*.js.map
+*.d.ts
+!jest.config.js
+!eslint.config.mjs
+
+# Prisma compiled
+/prisma/*.js
+/prisma/*.d.ts
+/prisma/*.js.map
+
+# TypeScript incremental build
+*.tsbuildinfo
+
 # Logs
 logs
 *.log
